@@ -14,7 +14,7 @@ public class ContentController : Controller
     {
         _manager = manager;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetManyContents()
     {
@@ -22,7 +22,7 @@ public class ContentController : Controller
 
         if (!contents.Any())
             return NotFound();
-        
+
         return Ok(contents);
     }
 
@@ -33,10 +33,10 @@ public class ContentController : Controller
 
         if (content == null)
             return NotFound();
-        
+
         return Ok(content);
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> CreateContent(
         [FromBody] ContentInput content
@@ -46,7 +46,7 @@ public class ContentController : Controller
 
         return createdContent == null ? Problem() : Ok(createdContent);
     }
-    
+
     [HttpPatch("{id}")]
     public async Task<IActionResult> UpdateContent(
         Guid id,
@@ -57,7 +57,7 @@ public class ContentController : Controller
 
         return updatedContent == null ? NotFound() : Ok(updatedContent);
     }
-    
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteContent(
         Guid id
@@ -66,22 +66,63 @@ public class ContentController : Controller
         var deletedId = await _manager.DeleteContent(id).ConfigureAwait(false);
         return Ok(deletedId);
     }
-    
+
     [HttpPost("{id}/genre")]
-    public Task<IActionResult> AddGenres(
+    public async Task<IActionResult> AddGenres(
         Guid id,
-        [FromBody] IEnumerable<string> genre
+        [FromBody] IEnumerable<string> genres
     )
     {
-        return Task.FromResult<IActionResult>(StatusCode((int)HttpStatusCode.NotImplemented));
+        var contentToUpdate = await _manager.GetContent(id).ConfigureAwait(false);
+
+        if (contentToUpdate == null)
+        {
+            return NotFound("Content not found.");
+        }
+
+        if (contentToUpdate.GenreList.Intersect(genres).Any())
+        {
+            return BadRequest("Cannot add repeated Genres.");
+        }
+
+        var genreList = contentToUpdate.GenreList.ToList();
+        genreList.AddRange(genres);
+
+        var newContent = new ContentInput() { Genres = genreList };
+
+        var updatedContent = await _manager.UpdateContent(id, newContent.ToDto()).ConfigureAwait(false);
+
+        return Ok(updatedContent);
     }
-    
+
     [HttpDelete("{id}/genre")]
-    public Task<IActionResult> RemoveGenres(
+    public async Task<IActionResult> RemoveGenres(
         Guid id,
-        [FromBody] IEnumerable<string> genre
+        [FromBody] IEnumerable<string> genres
     )
     {
-        return Task.FromResult<IActionResult>(StatusCode((int)HttpStatusCode.NotImplemented));
+        if (genres == null || !genres.Any())
+        {
+            return BadRequest("Genres list is empty or does not exist.");
+        }
+
+        var contentToUpdate = await _manager.GetContent(id).ConfigureAwait(false);
+
+        if (contentToUpdate == null)
+        {
+            return NotFound("Content not found.");
+        }
+
+        if (!contentToUpdate.GenreList.Intersect(genres).Any())
+        {
+            return BadRequest("Genre not found.");
+        }
+
+        var genreList = contentToUpdate.GenreList.Except(genres);
+        var newContent = new ContentInput() { Genres = genreList };
+
+        var updatedContent = await _manager.UpdateContent(id, newContent.ToDto()).ConfigureAwait(false);
+
+        return Ok(updatedContent);
     }
 }
