@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using NOS.Engineering.Challenge.API.Models;
 using NOS.Engineering.Challenge.Managers;
+using NOS.Engineering.Challenge.Models;
 
 namespace NOS.Engineering.Challenge.API.Controllers;
 
@@ -125,7 +126,15 @@ public class ContentController : Controller
         var genreList = contentToUpdate.GenreList.ToList();
         genreList.AddRange(genres);
 
-        var newContent = new ContentInput() { Genres = genreList };
+        var newContent = new Content(contentToUpdate.Id,
+                                     contentToUpdate.Title,
+                                     contentToUpdate.SubTitle,
+                                     contentToUpdate.Description,
+                                     contentToUpdate.ImageUrl,
+                                     contentToUpdate.Duration,
+                                     contentToUpdate.StartTime,
+                                     contentToUpdate.EndTime,
+                                     genreList);
 
         var updatedContent = await _manager.UpdateContent(id, newContent.ToDto()).ConfigureAwait(false);
         _logger.LogInformation($"[{DateTime.UtcNow}]: Content updated successfuly");
@@ -159,7 +168,15 @@ public class ContentController : Controller
         }
 
         var genreList = contentToUpdate.GenreList.Except(genres);
-        var newContent = new ContentInput() { Genres = genreList };
+        var newContent = new Content(contentToUpdate.Id,
+                                     contentToUpdate.Title,
+                                     contentToUpdate.SubTitle,
+                                     contentToUpdate.Description,
+                                     contentToUpdate.ImageUrl,
+                                     contentToUpdate.Duration,
+                                     contentToUpdate.StartTime,
+                                     contentToUpdate.EndTime,
+                                     genreList);
 
         var updatedContent = await _manager.UpdateContent(id, newContent.ToDto()).ConfigureAwait(false);
         _logger.LogInformation($"[{DateTime.UtcNow}]: Content updated successfuly");
