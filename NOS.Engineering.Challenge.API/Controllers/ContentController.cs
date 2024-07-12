@@ -1,5 +1,5 @@
-using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using NOS.Engineering.Challenge.API.Models;
 using NOS.Engineering.Challenge.Managers;
 using NOS.Engineering.Challenge.Models;
@@ -12,17 +12,31 @@ public class ContentController : Controller
 {
     private readonly IContentsManager _manager;
     private readonly ILogger<ContentController> _logger;
-    public ContentController(IContentsManager manager, ILogger<ContentController> logger)
+    private readonly IMemoryCache _cache;
+
+    private const string CACHE_KEY = "Nos_Challenge_Contents_{0}";
+    private readonly int _cacheTimeInMinutes;
+
+    public ContentController(IContentsManager manager, ILogger<ContentController> logger, IMemoryCache cache, IConfiguration configuration)
     {
         _manager = manager;
         _logger = logger;
+        _cache = cache;
+        _cacheTimeInMinutes = configuration.GetValue<int>("Cache:TimeInMinutes");
     }
 
     [HttpGet]
     public async Task<IActionResult> GetManyContents()
     {
         _logger.LogInformation($"[{DateTime.UtcNow}]: Getting contents");
-        var contents = await _manager.GetManyContents().ConfigureAwait(false);
+        if (_cache.TryGetValue(string.Format(CACHE_KEY, "GetManyContents"), out IEnumerable<Content> contents))
+        {
+            _logger.LogInformation($"[{DateTime.UtcNow}]: Contents fetched successfuly");
+            return Ok(contents);
+        }
+
+        contents = await _manager.GetManyContents().ConfigureAwait(false);
+        _cache.Set(string.Format(CACHE_KEY, "GetManyContents"), contents, TimeSpan.FromMinutes(_cacheTimeInMinutes));
 
         if (!contents.Any())
         {
@@ -37,6 +51,17 @@ public class ContentController : Controller
     public async Task<IActionResult> GetContent(Guid id)
     {
         _logger.LogInformation($"[{DateTime.UtcNow}]: Getting content with Id {{{id}}}");
+        if (_cache.TryGetValue(string.Format(CACHE_KEY, "GetManyContents"), out IEnumerable<Content> contents))
+        {
+            if (contents.Where(x => x.Id ==id).FirstOrDefault() == default)
+            {
+                _logger.LogInformation($"[{DateTime.UtcNow}]: Content not found");
+                return NotFound();
+            }
+
+            return Ok(contents.Where(x => x.Id == id).FirstOrDefault());
+        }
+
         var content = await _manager.GetContent(id).ConfigureAwait(false);
 
         if (content == null)
@@ -62,6 +87,8 @@ public class ContentController : Controller
             return Problem();
         }
 
+        _cache.Remove(string.Format(CACHE_KEY, "GetManyContents")); // Force update on next fetch
+
         _logger.LogInformation($"[{DateTime.UtcNow}]: New content created with Id {{{createdContent.Id}}}");
 
         return Ok(createdContent);
@@ -82,6 +109,7 @@ public class ContentController : Controller
             _logger.LogInformation($"[{DateTime.UtcNow}]: Could update content");
             return NotFound();
         }
+        _cache.Remove(string.Format(CACHE_KEY, "GetManyContents")); // Force update on next fetch
         _logger.LogInformation($"[{DateTime.UtcNow}]: Content with Id {{{id}}} updated successfuly");
         return updatedContent == null ? NotFound() : Ok(updatedContent);
     }
@@ -94,6 +122,7 @@ public class ContentController : Controller
         _logger.LogInformation($"[{DateTime.UtcNow}]: Deleting content with Id {{{id}}}");
 
         var deletedId = await _manager.DeleteContent(id).ConfigureAwait(false);
+        _cache.Remove(string.Format(CACHE_KEY, "GetManyContents")); // Force update on next fetch
         return Ok(deletedId);
     }
 
@@ -137,6 +166,7 @@ public class ContentController : Controller
                                      genreList);
 
         var updatedContent = await _manager.UpdateContent(id, newContent.ToDto()).ConfigureAwait(false);
+        _cache.Remove(string.Format(CACHE_KEY, "GetManyContents")); // Force update on next fetch
         _logger.LogInformation($"[{DateTime.UtcNow}]: Content updated successfuly");
         return Ok(updatedContent);
     }
@@ -179,6 +209,7 @@ public class ContentController : Controller
                                      genreList);
 
         var updatedContent = await _manager.UpdateContent(id, newContent.ToDto()).ConfigureAwait(false);
+        _cache.Remove(string.Format(CACHE_KEY, "GetManyContents")); // Force update on next fetch
         _logger.LogInformation($"[{DateTime.UtcNow}]: Content updated successfuly");
         return Ok(updatedContent);
     }

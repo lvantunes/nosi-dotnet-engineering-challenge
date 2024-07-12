@@ -15,6 +15,7 @@ public static class WebApplicationBuilderExtensions
         var serviceCollection = webApplicationBuilder.Services;
         var configuration = webApplicationBuilder.Configuration;
 
+        serviceCollection.AddMemoryCache();
         serviceCollection.Configure<JsonOptions>(options =>
         {
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
