@@ -7,6 +7,16 @@ var app = builder.Build();
 
 app.MapControllers();
 app.UseSwagger()
-    .UseSwaggerUI();
-    
+    .UseSwaggerUI(options =>
+    {
+        var descriptions = app.DescribeApiVersions();
+        foreach(var desc in descriptions)
+        {
+            string url = $"/swagger/{desc.GroupName}/swagger.json";
+            string name = desc.GroupName.ToLowerInvariant();
+
+            options.SwaggerEndpoint(url, name);
+        }
+    });
+
 app.Run();

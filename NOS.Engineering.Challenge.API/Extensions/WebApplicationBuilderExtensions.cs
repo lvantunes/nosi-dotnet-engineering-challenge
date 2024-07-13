@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Http.Json;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using NOS.Engineering.Challenge.Database;
 using NOS.Engineering.Challenge.Managers;
@@ -16,7 +17,7 @@ public static class WebApplicationBuilderExtensions
         var configuration = webApplicationBuilder.Configuration;
 
         serviceCollection.AddMemoryCache();
-        serviceCollection.Configure<JsonOptions>(options =>
+        serviceCollection.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
         {
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             options.SerializerOptions.PropertyNamingPolicy = null;
@@ -24,11 +25,24 @@ public static class WebApplicationBuilderExtensions
         serviceCollection.AddControllers();
         serviceCollection
             .AddEndpointsApiExplorer();
-        
-        serviceCollection.AddSwaggerGen(c =>
+
+        serviceCollection.ConfigureOptions<ConfigureSwaggergenOptions>();
+
+        serviceCollection.AddApiVersioning(options =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Nos Challenge Api", Version = "v1" });
+            options.DefaultApiVersion = new ApiVersion(1, 0);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+            options.ApiVersionReader = new UrlSegmentApiVersionReader();
+        }).AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'V";
+            options.SubstituteApiVersionInUrl = true;
         });
+
+        
+
+        serviceCollection.AddSwaggerGen();
 
         serviceCollection
             .RegisterSlowDatabase(configuration)
@@ -58,7 +72,7 @@ public static class WebApplicationBuilderExtensions
     {
         webApplicationBuilder
             .WebHost
-            .ConfigureLogging(logging => { logging.ClearProviders(); });
+            .ConfigureLogging(logging => { logging.AddConsole(); });
 
         return webApplicationBuilder;
     }

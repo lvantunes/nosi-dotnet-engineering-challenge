@@ -1,12 +1,16 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using NOS.Engineering.Challenge.API.Models;
 using NOS.Engineering.Challenge.Managers;
 using NOS.Engineering.Challenge.Models;
 
-namespace NOS.Engineering.Challenge.API.Controllers;
+namespace NOS.Engineering.Challenge.API.Controllers.v1;
 
-[Route("api/v1/[controller]")]
+
+[ApiVersion(1.0)]
+[ApiExplorerSettings(GroupName = "v1")]
+[Route("api/v{apiVersion:apiVersion}/[controller]")]
 [ApiController]
 public class ContentController : Controller
 {
@@ -26,6 +30,7 @@ public class ContentController : Controller
     }
 
     [HttpGet]
+    [Obsolete("Use 'GET api/v2/content' instead")]
     public async Task<IActionResult> GetManyContents()
     {
         _logger.LogInformation($"[{DateTime.UtcNow}]: Getting contents");
@@ -53,7 +58,7 @@ public class ContentController : Controller
         _logger.LogInformation($"[{DateTime.UtcNow}]: Getting content with Id {{{id}}}");
         if (_cache.TryGetValue(string.Format(CACHE_KEY, "GetManyContents"), out IEnumerable<Content> contents))
         {
-            if (contents.Where(x => x.Id ==id).FirstOrDefault() == default)
+            if (contents.Where(x => x.Id == id).FirstOrDefault() == default)
             {
                 _logger.LogInformation($"[{DateTime.UtcNow}]: Content not found");
                 return NotFound();

@@ -8,11 +8,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NOS.Engineering.Challenge.API.Controllers;
+using NOS.Engineering.Challenge.API.Controllers.v1;
 using NOS.Engineering.Challenge.API.Models;
 using NOS.Engineering.Challenge.Managers;
 using NOS.Engineering.Challenge.Models;
 
-namespace NOS.Engineering.Challenge.API.Tests.ControllerTests;
+namespace NOS.Engineering.Challenge.API.Tests.ControllerTests.v1;
 
 public class ContentControllerTests
 {
@@ -61,7 +62,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.GetManyContents().ConfigureAwait(false);
+        var contents = await _contentController.GetManyContents();
 
         #endregion
         #region === Assert ===
@@ -92,7 +93,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.GetManyContents().ConfigureAwait(false);
+        var contents = await _contentController.GetManyContents();
 
         #endregion
         #region === Assert ===
@@ -115,7 +116,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.GetContent(It.IsAny<Guid>()).ConfigureAwait(false);
+        var contents = await _contentController.GetContent(It.IsAny<Guid>());
 
         #endregion
         #region === Assert ===
@@ -144,7 +145,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.GetContent(It.IsAny<Guid>()).ConfigureAwait(false);
+        var contents = await _contentController.GetContent(It.IsAny<Guid>());
 
         #endregion
         #region === Assert ===
@@ -168,7 +169,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.CreateContent(contentInput).ConfigureAwait(false);
+        var contents = await _contentController.CreateContent(contentInput);
 
         #endregion
         #region === Assert ===
@@ -198,12 +199,12 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.CreateContent(contentInput).ConfigureAwait(false);
+        var contents = await _contentController.CreateContent(contentInput);
 
         #endregion
         #region === Assert ===
 
-        Assert.True(((IStatusCodeActionResult)contents).StatusCode == (int)StatusCodes.Status500InternalServerError);
+        Assert.True(((IStatusCodeActionResult)contents).StatusCode == StatusCodes.Status500InternalServerError);
         _manager.Verify(x => x.CreateContent(It.IsAny<ContentDto>()), Times.Once);
 
         #endregion
@@ -222,7 +223,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.UpdateContent(It.IsAny<Guid>(), contentInput).ConfigureAwait(false);
+        var contents = await _contentController.UpdateContent(It.IsAny<Guid>(), contentInput);
 
         #endregion
         #region === Assert ===
@@ -252,7 +253,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.UpdateContent(It.IsAny<Guid>(), contentInput).ConfigureAwait(false);
+        var contents = await _contentController.UpdateContent(It.IsAny<Guid>(), contentInput);
 
         #endregion
         #region === Assert ===
@@ -275,7 +276,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.DeleteContent(It.IsAny<Guid>()).ConfigureAwait(false);
+        var contents = await _contentController.DeleteContent(It.IsAny<Guid>());
 
         #endregion
         #region === Assert ===
@@ -304,7 +305,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.AddGenres(It.IsAny<Guid>(), newGenreList).ConfigureAwait(false);
+        var contents = await _contentController.AddGenres(It.IsAny<Guid>(), newGenreList);
 
         #endregion
         #region === Assert ===
@@ -336,7 +337,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.AddGenres(It.IsAny<Guid>(), newGenreList).ConfigureAwait(false);
+        var contents = await _contentController.AddGenres(It.IsAny<Guid>(), newGenreList);
 
         #endregion
         #region === Assert ===
@@ -362,7 +363,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.AddGenres(It.IsAny<Guid>(), It.Is<IEnumerable<string>>(x => x.Count() == 0)).ConfigureAwait(false); // Pass the same genres to the method
+        var contents = await _contentController.AddGenres(It.IsAny<Guid>(), It.Is<IEnumerable<string>>(x => x.Count() == 0)); // Pass the same genres to the method
 
         #endregion
         #region === Assert ===
@@ -388,7 +389,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.AddGenres(It.IsAny<Guid>(), contentsResult.GenreList).ConfigureAwait(false); // Pass the same genres to the method
+        var contents = await _contentController.AddGenres(It.IsAny<Guid>(), contentsResult.GenreList); // Pass the same genres to the method
 
         #endregion
         #region === Assert ===
@@ -413,7 +414,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.RemoveGenres(It.IsAny<Guid>(), contentsResult.GenreList).ConfigureAwait(false); // Pass the same genres to the method to successfuly remove
+        var contents = await _contentController.RemoveGenres(It.IsAny<Guid>(), contentsResult.GenreList); // Pass the same genres to the method to successfuly remove
 
         #endregion
         #region === Assert ===
@@ -445,7 +446,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.RemoveGenres(It.IsAny<Guid>(), genresToRemove).ConfigureAwait(false);
+        var contents = await _contentController.RemoveGenres(It.IsAny<Guid>(), genresToRemove);
 
         #endregion
         #region === Assert ===
@@ -470,7 +471,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.RemoveGenres(It.IsAny<Guid>(), It.Is<IEnumerable<string>>(x => x.Count() == 0)).ConfigureAwait(false); // Pass the same genres to the method
+        var contents = await _contentController.RemoveGenres(It.IsAny<Guid>(), It.Is<IEnumerable<string>>(x => x.Count() == 0)); // Pass the same genres to the method
 
         #endregion
         #region === Assert ===
@@ -496,7 +497,7 @@ public class ContentControllerTests
         #endregion
         #region === Act ===
 
-        var contents = await _contentController.RemoveGenres(It.IsAny<Guid>(), genresToRemove).ConfigureAwait(false);
+        var contents = await _contentController.RemoveGenres(It.IsAny<Guid>(), genresToRemove);
 
         #endregion
         #region === Assert ===

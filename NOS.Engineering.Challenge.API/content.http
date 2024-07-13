@@ -1,0 +1,2 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+GET https://localhost:7140/api/v2/content/e57e4cca-49fe-4191-be5a-bbab66af733a
