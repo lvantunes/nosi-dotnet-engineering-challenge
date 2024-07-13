@@ -19,9 +19,9 @@ public class ContentController : Controller
 
     public ContentController(IContentsManager manager, ILogger<ContentController> logger, IMemoryCache cache, IConfiguration configuration)
     {
-        _manager = manager;
-        _logger = logger;
-        _cache = cache;
+        _manager = manager ?? throw new ArgumentNullException(nameof(manager));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _cacheTimeInMinutes = configuration.GetValue<int>("Cache:TimeInMinutes");
     }
 
